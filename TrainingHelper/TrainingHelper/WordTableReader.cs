@@ -33,14 +33,24 @@ namespace TrainingHelper
                     {
                         var dateCell = tableRow.Elements<TableCell>().ElementAt(0);
                         var dateString = new string(dateCell.InnerText.SkipWhile(x => !char.IsDigit(x)).ToArray());
-                        var trainingDay = trainingDays.Find(t => (t.ExcercisesDay.Day.ToString() + "." + t.ExcercisesDay.Month.ToString()) == dateString);
-                        var descCell = tableRow.Elements<TableCell>().ElementAt(2);
-                        Paragraph p = descCell.Elements<Paragraph>().First();
-
-                        Run r = p.Elements<Run>().First();
-
-                        Text text = r.Elements<Text>().First();
-                        text.Text = trainingDay.Description;
+                        var trainingDay = trainingDays.Find(t => (t.ExcercisesDay.Day.ToString().PadLeft(2, '0') + "." + t.ExcercisesDay.Month.ToString().PadLeft(2, '0')) == dateString);
+                        if (trainingDay != null)
+                        {
+                            var descCell = tableRow.Elements<TableCell>().ElementAt(2);
+                            if (!string.IsNullOrEmpty(trainingDay.Description))
+                            {
+                                Paragraph p = descCell.Elements<Paragraph>().First();
+                                Run r = p.Elements<Run>().First();
+                                Text text = r.Elements<Text>().First();
+                                text.Text = trainingDay.Description;
+                            }
+                            else
+                            {
+                                Paragraph para = descCell.AppendChild(new Paragraph());
+                                Run run = para.AppendChild(new Run());
+                                run.AppendChild(new Text(trainingDay.Description));
+                            }
+                        }
                     }
                 }
             }

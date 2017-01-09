@@ -11,10 +11,14 @@ namespace TrainingHelper
     [Activity(Label = "TrainingHelper", MainLauncher = true, Icon = "@drawable/icon")]
     public class MainActivity : FragmentActivity, ActivitiCommunicator
     {
-        WordTableReader _tableReader;
+        private WordTableReader _tableReader;
+        private int _position;
+        List<TrainingDay> _trainingDays;
+
         public void PassValue(string value)
         {
-            var t = value;
+            _trainingDays[_position].Description = value;
+            _tableReader.SaveChangedDocument(_trainingDays);
         }
 
         protected override void OnCreate(Bundle bundle)
@@ -24,13 +28,18 @@ namespace TrainingHelper
             ViewPager viewPager = FindViewById<ViewPager>(Resource.Id.viewpager);
 
             _tableReader = new WordTableReader("/storage/emulated/legacy/Download/Krzysztof Samson.docx");
-            List<TrainingDay> trainingDays = _tableReader.ChangeTextInCell();
-            var adapter = new TrainingDayPagerAdapter(SupportFragmentManager, trainingDays);
+            _trainingDays = _tableReader.ChangeTextInCell();
+            var adapter = new TrainingDayPagerAdapter(SupportFragmentManager, _trainingDays);
             viewPager.Adapter = adapter;
-            var index = trainingDays.FindIndex(t => t.ExcercisesDay == DateTime.Today);
-            viewPager.SetCurrentItem(index, true);
-
-        }
+            var index = _trainingDays.FindIndex(t => t.ExcercisesDay == DateTime.Today);
+            if (index >= 0)
+            {
+                viewPager.SetCurrentItem(index, true);
+            }
+            viewPager.PageSelected += (object sender, ViewPager.PageSelectedEventArgs e) => {
+                _position = e.Position;        
+            };
+        }  
     }
 }
 

@@ -38,12 +38,5 @@ namespace TrainingHelper
             return new Java.Lang.String(_trainingDays[position].ExcercisesDay.ToLongDateString());
         }
 
-        public void test()
-        {
-            var frag = _fm.FindFragmentById(Resource.Id.training_day_summary);
-            EditText edit = (EditText)frag.View;
-            var text = edit.Text; 
-        }
-
     }
 }
