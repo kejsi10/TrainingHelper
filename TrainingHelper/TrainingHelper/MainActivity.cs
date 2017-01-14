@@ -5,6 +5,7 @@ using Android.Support.V4.View;
 using Android.Support.V4.App;
 using System.Collections.Generic;
 using System;
+using System.IO;
 
 namespace TrainingHelper
 {
@@ -26,19 +27,31 @@ namespace TrainingHelper
             base.OnCreate(bundle);
             SetContentView(Resource.Layout.Main);
             ViewPager viewPager = FindViewById<ViewPager>(Resource.Id.viewpager);
-
-            _tableReader = new WordTableReader("/storage/emulated/legacy/Download/Krzysztof Samson.docx");
-            _trainingDays = _tableReader.ChangeTextInCell();
-            var adapter = new TrainingDayPagerAdapter(SupportFragmentManager, _trainingDays);
-            viewPager.Adapter = adapter;
-            var index = _trainingDays.FindIndex(t => t.ExcercisesDay == DateTime.Today);
-            if (index >= 0)
+            var doc = "/sdcard/Download/Krzysztof Samson.docx";
+            if (File.Exists(doc))
             {
-                viewPager.SetCurrentItem(index, true);
+                _tableReader = new WordTableReader(doc);
+                _trainingDays = _tableReader.ChangeTextInCell();
+                var adapter = new TrainingDayPagerAdapter(SupportFragmentManager, _trainingDays);
+                viewPager.Adapter = adapter;
+                var index = _trainingDays.FindIndex(t => t.ExcercisesDay == DateTime.Today);
+                if (index >= 0)
+                {
+                    viewPager.SetCurrentItem(index, true);
+                }
+                viewPager.PageSelected += (object sender, ViewPager.PageSelectedEventArgs e) => {
+                    _position = e.Position;
+                };
             }
-            viewPager.PageSelected += (object sender, ViewPager.PageSelectedEventArgs e) => {
-                _position = e.Position;        
-            };
+            else
+            {
+                var callDialog = new AlertDialog.Builder(this);
+                callDialog.SetMessage("File not found: " + doc + ".\n App will be closed.");
+                callDialog.SetNeutralButton("Ok", delegate {
+                    Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
+                });
+                callDialog.Show();
+            }
         }  
     }
 }
